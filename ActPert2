@@ -1,0 +1,46 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+type Name struct {
+	Name string `json:"name"`
+}
+
+// POST Request - acceptName
+func acceptName(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Only POST method is supported", http.StatusMethodNotAllowed)
+		return
+	}
+	var name Name
+	err := json.NewDecoder(r.Body).Decode(&name)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Fprintf(w, "Name received: %s", name.Name)
+}
+
+// GET Request - sayHello
+func sayHello(W http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(W, "Only GET method is supported", http.StatusMethodNotAllowed)
+		return
+	}
+	fmt.Fprintf(W, "Hello, World")
+}
+
+func main() {
+	http.HandleFunc("/", sayHello)
+	http.HandleFunc("/name", acceptName)
+
+	fmt.Println("Server started at localhost:8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		fmt.Println("Error starting server:", err)
+	}
+}
